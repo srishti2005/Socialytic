@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Webapp Name</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Pacifico&display=swap'); /* Instagram-inspired font */
+
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(45deg, #f58529, #dd2a7b, #8134af, #515bd4);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .brand-name {
+            font-family: 'Pacifico', cursive;
+            font-size: 4.5rem;
+            color: white;
+            margin-bottom: 2.5rem;
+        }
+        .tagline {
+            font-size: 2.2rem;
+            font-weight: 400;
+            color: #fcd6d0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container text-center">
+        <h1 class="brand-name">Socialytics</h1>
+        <p class="tagline">Simple and smart social media analytics!</p>
+        <form class="form-inline justify-content-center" action="/analytics/" method="get" onsubmit="this.action = '/analytics/' + document.getElementById('user_id').value;">
+            <input type="number" id="user_id" name="user_id" class="form-control mr-2" placeholder="Enter User ID" required>
+            <button type="submit" class="btn btn-primary">Get Analytics</button>
+        </form>
+    </div>
+</body>
+</html>

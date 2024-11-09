@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics Dashboard - User {{ user_id }}</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(45deg, #f58529, #dd2a7b, #8134af, #515bd4);
+            color: #333;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+        }
+
+        .h1, h1 {
+        font-size: 3.5rem;
+        font-family: 'Pacifico', cursive;
+    }
+        .container {
+            max-width: 1200px;
+            margin: auto;
+            padding: 20px;
+        }
+        .card {
+            background: #ffe4e1;
+            border-radius: 8px;
+            padding: 25px;
+            margin: 25px 0;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .btn-custom {
+            background-color: #ffff;
+            color: black;
+        }
+        .btn-custom:hover {
+            background-color: #f58529;
+        }
+        canvas {
+            margin-top: 20px;
+            max-width: 100%;
+        }
+        .comment-date {
+            font-size: 0.85em;
+            color: #666;
+            margin-top: 5px;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container text-center">
+        <h1 class="text-light">Analytics Dashboard for User ID: {{ user_id }}</h1>
+        
+        <div class="card">
+            <h2>User Statistics</h2>
+            <p><strong>Post Count:</strong> {{ post_count }}</p>
+            <p><strong>Follower Count:</strong> {{ follower_count }}</p>
+        </div>
+        
+
+        <div class="card">
+            <h2>Top Liked Photo</h2>
+            {% if top_liked_photo %}
+                <p>Photo ID: {{ top_liked_photo.photo_id }} with {{ top_liked_photo.like_count }} likes</p>
+                <!--<img src="{{ top_liked_photo.image_url }}" alt="Top Liked Photo" class="img-fluid" style="max-width: 200px;">-->
+            {% else %}
+                <p>No photos available.</p>
+            {% endif %}
+        </div>
+
+        <div class="card">
+            <h2>Recent Comments</h2>
+            <ul class="list-unstyled">
+                {% for comment in recent_comments %}
+                    <li><strong>Photo {{ comment.photo_id }}:</strong> {{ comment.comment_text }}
+                        <span class="comment-date">{{ comment.created_at }}</span>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div class="button-container my-3">
+            <button class="btn btn-custom m-2" onclick="toggleChart('barChartContainer')">Toggle Bar Chart (Likes & Comments per Photo)</button>
+            <button class="btn btn-custom m-2" onclick="toggleChart('pieChartContainer')">Toggle Pie Chart (Likes vs. Comments)</button>
+            <button class="btn btn-custom m-2" onclick="toggleChart('lineChartContainer')">Toggle Line Chart (Post Frequency)</button>
+        </div>
+
+        <!-- Bar Chart: Likes and Comments per Photo -->
+        <div id="barChartContainer" class="card" style="display: none;">
+            <h3>Likes and Comments per Photo</h3>
+            <canvas id="analyticsBarChart"></canvas>
+        </div>
+
+        <style>
+            #analyticsPieChart {
+                width: 1078px !important;
+                height: 478px !important;
+            }
+        </style>
+
+        <!-- Pie Chart: Likes vs Comments -->
+        <div id="pieChartContainer" class="card" style="display: none;">
+            <h3>Likes vs. Comments Distribution</h3>
+            <canvas id="analyticsPieChart"></canvas>
+        </div>
+
+        <!-- Line Chart: Post Frequency Over Time -->
+        <div id="lineChartContainer" class="card" style="display: none;">
+            <h3>Post Frequency Over Time</h3>
+            <canvas id="analyticsLineChart"></canvas>
+        </div>
+    </div>
+
+    <script>
+        const photoIds = {{ photo_ids | tojson }};
+        const commentCounts = {{ comment_counts | tojson }};
+        const likeCounts = {{ like_counts | tojson }};
+        const totalLikes = likeCounts.reduce((a, b) => a + b, 0);
+        const totalComments = commentCounts.reduce((a, b) => a + b, 0);
+
+        function toggleChart(chartId) {
+            const chart = document.getElementById(chartId);
+            chart.style.display = chart.style.display === 'none' ? 'block' : 'none';
+        }
+
+        new Chart(document.getElementById('analyticsBarChart'), {
+            type: 'bar',
+            data: {
+                labels: photoIds,
+                datasets: [
+                    { label: 'Comments', data: commentCounts, backgroundColor: 'rgba(75, 192, 192, 0.6)', borderColor: 'rgba(75, 192, 192, 1)', borderWidth: 1 },
+                    { label: 'Likes', data: likeCounts, backgroundColor: 'rgba(153, 102, 255, 0.6)', borderColor: 'rgba(153, 102, 255, 1)', borderWidth: 1 }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { position: 'top' } },
+                scales: { y: { beginAtZero: true } }
+            }
+        });
+
+        new Chart(document.getElementById('analyticsPieChart'), {
+        type: 'pie',
+        data: {
+            labels: ['Likes', 'Comments'],
+            datasets: [
+                {
+                    data: [totalLikes, totalComments],
+                    backgroundColor: ['rgba(153, 102, 255, 0.6)', 'rgba(75, 192, 192, 0.6)'],
+                    borderColor: ['rgba(153, 102, 255, 1)', 'rgba(75, 192, 192, 1)'],
+                    borderWidth: 1
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'top' }
+            },
+            layout: {
+                padding: {
+                    left: 10,
+                    right: 10,
+                    top: 10,
+                    bottom: 10
+                }
+            }
+        }
+    });
+
+        new Chart(document.getElementById('analyticsLineChart'), {
+            type: 'line',
+            data: {
+                labels: ['January', 'February', 'March', 'April', 'May'],
+                datasets: [
+                    { label: 'Post Count Over Time', data: [5, 10, 15, 7, 12], backgroundColor: 'rgba(54, 162, 235, 0.2)', borderColor: 'rgba(54, 162, 235, 1)', borderWidth: 2, fill: true }
+                ]
+            },
+            options: {
+                responsive: true,
+                scales: { y: { beginAtZero: true } }
+            }
+        });
+    </script>
+</body>
+</html>
